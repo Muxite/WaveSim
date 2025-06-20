@@ -12,7 +12,7 @@ sf::Color colorize(float value, float min, float max)
 
     const sf::Color blue{ 0, 0, 255};
     const sf::Color gray{ 0, 0, 0 };
-    const sf::Color red{ 255, 0, 0 };
+    const sf::Color red{ 255, 0, 0};
 
     auto lerp = [](const sf::Color& a, const sf::Color& b, float t) -> sf::Color {
         return {
@@ -43,32 +43,27 @@ void display_print(const std::vector<std::vector<float>>& map)
 }
 
 
-void draw_world(sf::RenderWindow& window, world& w, int upscale) {
-    // Each quad = 2 triangles = 6 vertices
+void draw_world(sf::RenderWindow& window, world& w, int upscale, int start_x = 0, int end_x = 9999, int start_y = 0, int end_y = 9999) {
     sf::VertexArray grid(sf::PrimitiveType::Triangles, w.rows * w.cols * 6);
 
     int idx = 0;
-    for (int y = 0; y < w.rows; y++) {
-        for (int x = 0; x < w.cols; x++) {
+    for (int y = start_y; y < end_y; y++) {
+        for (int x = start_x; x < end_x; x++) {
             float value = w.get(1, x, y);
             sf::Color color = colorize(value, -100.0f, 100.0f);
 
-            float px = x * upscale;
-            float py = y * upscale;
+            float px = (x - start_x) * upscale;
+            float py = (y - start_y) * upscale;
             float ux = upscale;
 
-            // Define two triangles per cell
-            // Triangle 1: top-left, top-right, bottom-right
             grid[idx + 0].position = { px, py };
             grid[idx + 1].position = { px + ux, py };
             grid[idx + 2].position = { px + ux, py + ux };
 
-            // Triangle 2: top-left, bottom-right, bottom-left
             grid[idx + 3].position = { px, py };
             grid[idx + 4].position = { px + ux, py + ux };
             grid[idx + 5].position = { px, py + ux };
 
-            // Assign color to all vertices
             for (int i = 0; i < 6; ++i) {
                 grid[idx + i].color = color;
             }
