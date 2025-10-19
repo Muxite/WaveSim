@@ -2,6 +2,18 @@
 #include <vector>
 #include <functional>
 #include <array>
+#include <string>
+
+/**
+ * Available world update implementations
+ */
+enum class UpdateMethod {
+    Basic,
+    Parallel,
+    CUDA
+};
+
+std::string update_method_to_string(UpdateMethod method);
 
 /**
  * @class world
@@ -16,6 +28,7 @@
 class world {
 private:
     float speed;
+	UpdateMethod method;
 
 public:
     int rows, cols;
@@ -26,10 +39,10 @@ public:
      * @param r Number of rows in the simulation grid
      * @param c Number of columns in the simulation grid
      * @param s Wave propagation speed constant
-     * @param wrap If true, simulates toroidal wrapping at edges; if false, uses fixed boundaries
+	 * @param method Update method to use for simulation steps
      */
-    world(int r, int c, float s, bool wrap);
-    bool wrap;
+    world(int r, int c, float s, UpdateMethod method);
+    
 
     /**
      * @brief Access value in the wave field at specified time and position
@@ -37,9 +50,6 @@ public:
      * @param x X coordinate in the grid
      * @param y Y coordinate in the grid
      * @return Reference to the float value at the specified spacetime position
-     *
-     * Handles boundary conditions automatically based on wrap flag. Returns a dummy
-     * reference for out-of-bounds access when not wrapping.
      */
     float& get(uint8_t t, int x, int y);
 
@@ -55,14 +65,21 @@ public:
     float lap(uint8_t t, int x, int y);
 
     /**
-     * @brief Advance simulation by one time step using single-threaded computation
+     * @brief Advance simulation by one time step using the chosen method.
      */
     void update();
 
     /**
-	 * @brief Advance simulation by one time step. Uses compiler flag for parallelization.
+	 * @brief Calculate the next frame of simulation using compiler flag for parallelization.
      */
-	void update_parallel();
+	void calculate_basic();
+
+    /**
+	* @brief Calculate the next frame of simulation using CUDA acceleration on the GPU.
+	* MUST BE COMPILED WITH CUDA SUPPORT. NO WRAPPING SUPPORTED.
+	* #TODO: Implement boundary wrapping for CUDA version.
+    */
+    void calculate_cuda();
 
     /**
      * @brief Add a wave generator to the simulation

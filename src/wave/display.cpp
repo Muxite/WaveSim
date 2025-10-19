@@ -43,30 +43,49 @@ void display_print(const std::vector<std::vector<float>>& map)
 }
 
 
-void draw_world(sf::RenderWindow& window, world& w, int upscale, int start_x = 0, int end_x = 9999, int start_y = 0, int end_y = 9999) {
-    sf::VertexArray grid(sf::PrimitiveType::Triangles, w.rows * w.cols * 6);
+void draw_world(sf::RenderWindow& window, world& w, float upscale,
+    int start_x = 0, int end_x = 9999, int start_y = 0, int end_y = 9999)
+{
+    if (upscale <= 0) upscale = 1;
 
+    int world_w = end_x - start_x;
+    int world_h = end_y - start_y;
+
+    int draw_cols = static_cast<int>(world_w * std::max(upscale, 0.001f));
+    int draw_rows = static_cast<int>(world_h * std::max(upscale, 0.001f));
+
+    if (draw_cols <= 0 || draw_rows <= 0)
+        return;
+
+    float cell_size = 1.0f / upscale;
+
+    sf::VertexArray grid(sf::PrimitiveType::Triangles, draw_rows * draw_cols * 6);
     int idx = 0;
-    for (int y = start_y; y < end_y; y++) {
-        for (int x = start_x; x < end_x; x++) {
-            float value = w.get(1, x, y);
+
+    for (int y = 0; y < draw_rows; ++y) {
+        for (int x = 0; x < draw_cols; ++x) {
+            float wx_f = start_x + x / upscale;
+            float wy_f = start_y + y / upscale;
+
+            int wx = std::clamp(static_cast<int>(wx_f), start_x, end_x - 1);
+            int wy = std::clamp(static_cast<int>(wy_f), start_y, end_y - 1);
+
+            float value = w.get(1, wx, wy);
             sf::Color color = colorize(value, -100.0f, 100.0f);
 
-            float px = (x - start_x) * upscale;
-            float py = (y - start_y) * upscale;
-            float ux = upscale;
+            float px = static_cast<float>(x) * cell_size;
+            float py = static_cast<float>(y) * cell_size;
 
             grid[idx + 0].position = { px, py };
-            grid[idx + 1].position = { px + ux, py };
-            grid[idx + 2].position = { px + ux, py + ux };
+            grid[idx + 1].position = { px + cell_size, py };
+            grid[idx + 2].position = { px + cell_size, py + cell_size };
 
             grid[idx + 3].position = { px, py };
-            grid[idx + 4].position = { px + ux, py + ux };
-            grid[idx + 5].position = { px, py + ux };
+            grid[idx + 4].position = { px + cell_size, py + cell_size };
+            grid[idx + 5].position = { px, py + cell_size };
 
-            for (int i = 0; i < 6; ++i) {
+            for (int i = 0; i < 6; ++i)
                 grid[idx + i].color = color;
-            }
 
             idx += 6;
         }

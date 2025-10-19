@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
-project(WaveSim)
+project(WaveSim LANGUAGES CXX CUDA)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CUDA_ARCHITECTURES 89)
 
 add_subdirectory("src/wave")
 

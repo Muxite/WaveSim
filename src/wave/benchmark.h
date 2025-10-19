@@ -10,9 +10,14 @@
  * Performance metrics for benchmark runs
  */
 struct BenchmarkResult {
-	double average_update_time;
-	double average_draw_time;
-	int frames;
+    double average_update_time;
+    double average_draw_time;
+    int frames;
+    int sim_width;
+    int sim_height;
+    int display_width;
+    int display_height;
+    UpdateMethod method;
 };
 
 /**
@@ -20,15 +25,6 @@ struct BenchmarkResult {
  * @param result The benchmark results to display
  */
 void print_benchmark_result(const BenchmarkResult& result);
-
-/**
- * Available world update implementations
- */
-enum class UpdateMethod {
-    Basic,
-    Parallel,
-    CUDA
-};
 
 /**
  * Runs wave simulation benchmark
@@ -45,5 +41,6 @@ BenchmarkResult run_benchmark(
     UpdateMethod update_method = UpdateMethod::Basic,
     int width = 400,
     int height = 300,
-    int frame_count = 512
+    int frame_count = 1024,
+	bool displayless = false
 );
